@@ -1,5 +1,11 @@
 # WMP ClinicFlow
 
+> **Live website:** https://wmp-clinicflow.wmpsolution.chatgpt.site  
+> **Reception:** https://wmp-clinicflow.wmpsolution.chatgpt.site/reception  
+> **Current hosted source:** [hosted/](hosted/README.md). Uses a shared cloud database, DNotifier HTTP/WebSocket integration, a new logo, Poppins and Open Sans. DNotifier AI is configured to the verified `open_ai` / `gpt-4.1-mini` connection.  
+> The original Node/SQLite laptop prototype below remains available for local development. The live website does not require this laptop to stay on.
+
+
 A clinic operations prototype by **Usama, Ayan and Hassaan**. Daily capacity, private booking tokens, live queues and cancellation recovery, with the official DNotifier SDK.
 
 ## Run on Windows
