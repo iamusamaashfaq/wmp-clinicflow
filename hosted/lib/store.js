@@ -12,4 +12,4 @@ export async function change(db,fn){
  }
  throw Error('The clinic is busy. Please retry; no booking was confirmed.');
 }
-export async function expire(db){const current=await load(db);if(!current.clinic.state.offers.some(o=>o.status==='Pending'&&(o.expires<=Date.now()||o.date!==new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())||!current.clinic.beforeCutoff())))return;await change(db,c=>c.expire());}
+export async function expire(db){const current=await load(db);if(Date.now()-(current.clinic.state.lastClockTick||0)<15000)return;await change(db,c=>{if(Date.now()-(c.state.lastClockTick||0)>=15000)c.expire();});}

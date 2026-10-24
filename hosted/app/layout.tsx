@@ -4,7 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "WMP ClinicFlow · Care without the wait",
   description: "Book your clinic visit online, follow your token and accept an earlier slot.",
-  icons: {
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {capable:true,title:"ClinicFlow",statusBarStyle:"default"},
+  icons: {
+    apple: "/brand/icon-192.png",
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },

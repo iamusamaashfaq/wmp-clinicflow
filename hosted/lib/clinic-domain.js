@@ -1,4 +1,4 @@
-import { randomUUID, randomBytes } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';import {installTiming} from './timing.js';
 
 export function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi', year:'numeric',month:'2-digit',day:'2-digit' }).format(new Date()); }
 export function addDays(date,n) { const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10); }
@@ -26,7 +26,7 @@ export class Clinic {
   beforeCutoff(){const hhmm=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(this.clock()));return hhmm<this.state.settings.cutoff;}
   fill(date){if(date!==today()||!this.beforeCutoff()||this.day(date).closed)return;const next=this.nextWorking(date);if(!next)return;
     while(this.availability(date).remaining>0){
-      const candidates=this.state.bookings.filter(b=>b.date===next&&b.status==='Booked'&&b.optIn&&b.earliest<=this.state.settings.cutoff&&!this.state.offers.some(o=>o.bookingId===b.id&&o.date===date&&['Pending','Declined','Expired','Accepted'].includes(o.status))).sort((a,b)=>a.created-b.created);
+      const candidates=this.state.bookings.filter(b=>b.date===next&&b.status==='Booked'&&b.optIn&&b.earliest<=new Date(this.preview(date).estimatedAt).toLocaleTimeString('en-GB',{timeZone:'Asia/Karachi',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})&&!this.state.offers.some(o=>o.bookingId===b.id&&o.date===date&&['Pending','Declined','Expired','Accepted'].includes(o.status))).sort((a,b)=>a.created-b.created);
       const b=candidates[0];if(!b)break;
       const o={id:randomUUID(),bookingId:b.id,date,originalDate:b.date,status:'Pending',created:this.clock(),expires:this.clock()+this.state.settings.offerMinutes*60000};this.state.offers.push(o);this.event('offer.created',`Earlier appointment offered to ${b.token}`,b.id);
     }
@@ -44,4 +44,4 @@ export class Clinic {
   queue(id,action){return this.atomic(()=>{const b=this.find(id);if(b.date!==today())throw Error('Queue actions are only available for today.');const transitions={'check-in':['Booked','Checked in'],'call':['Checked in','In consultation'],'complete':['In consultation','Completed'],'absent':['Checked in','Absent']};const t=transitions[action];if(!t||b.status!==t[0])throw Error('This queue action is not valid for the current status.');if(action==='call'&&this.state.bookings.some(x=>x.date===today()&&x.status==='In consultation'))throw Error('Complete the current consultation first.');b.status=t[1];if(action==='check-in')b.checkedIn=this.clock();this.event('queue.updated',`${b.token}: ${b.status}`,id);return b;});}
   view(b){const queue=this.state.bookings.filter(x=>x.date===b.date&&['Checked in','In consultation'].includes(x.status)).sort((a,b)=>(a.checkedIn||0)-(b.checkedIn||0));const index=queue.findIndex(x=>x.id===b.id);const ahead=index<0?queue.length:index;const {access,...safe}=b;return {...safe,ahead,waitMin:ahead*10+this.state.settings.delay,offer:this.state.offers.find(o=>o.bookingId===b.id&&o.status==='Pending'&&o.expires>this.clock())||null,notifications:this.state.events.filter(e=>e.bookingId===b.id||e.type==='doctor.updated').slice(0,15)};}
   close(){}
-}
+}installTiming(Clinic);
