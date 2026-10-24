@@ -1,0 +1,10 @@
+{
+  "name": "wmp-clinicflow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Clinic capacity, live queues and earlier-slot recovery powered by DNotifier",
+  "scripts": { "start": "node --env-file-if-exists=.env server.js", "test": "node --test tests/*.test.js" },
+  "engines": { "node": ">=24.0.0" },
+  "dependencies": { "@dnotifier-realtime/dnotifier": "1.1.25", "ws": "^8.18.0" }
+}
