@@ -2,6 +2,7 @@ import {randomBytes,timingSafeEqual,createHash} from 'node:crypto';
 import {load,change,expire} from './store';
 import {today,addDays,validDate} from './clinic-domain';
 import {status,publish,eventStream,ask} from './notifier';
+import {makeReport} from './reports.js';
 const hash=s=>createHash('sha256').update(s).digest('hex');
 const same=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const json=(code,data,headers={})=>Response.json(data,{status:code,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer',...headers}});
@@ -18,6 +19,15 @@ export async function handle(req,env){
   if(req.method==='POST'&&req.headers.get('origin')&&req.headers.get('origin')!==url.origin)throw Object.assign(Error('Cross-origin request denied.'),{status:403});
   if(p==='/events'&&req.method==='GET'){await rate(req,env,'events',20);return eventStream(req,env);}
   await expire(env.DB);let {clinic:c}=await load(env.DB);
+  if((p==='/reports'||p==='/reports/pdf')&&req.method==='GET'){
+   await staff(req,env);
+   const report=makeReport(c,{from:url.searchParams.get('from'),to:url.searchParams.get('to'),status:url.searchParams.get('status')});
+   if(p==='/reports')return json(200,report);
+   await rate(req,env,'pdf-report',8);
+   const {makeReportPdf,reportFonts}=await import('./report-pdf.js');
+   const bytes=await makeReportPdf(report,await reportFonts(url.origin));
+   return new Response(bytes,{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="clinicflow-report-${report.from}-to-${report.to}.pdf"`,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
+  }
   if(p==='/public')return json(200,await summary(env,c));
   if(p==='/availability'){const date=url.searchParams.get('date');if(!validDate(date)||date<today()||date>addDays(today(),89))throw Error('Invalid booking date.');return json(200,{...c.availability(date),suggestedDate:c.nextDate(date)});}
   if(p==='/login'&&req.method==='POST'){await rate(req,env,'login',8);const b=await data(req);if(!env.STAFF_PASSWORD||!same(String(b.password||''),env.STAFF_PASSWORD))throw Object.assign(Error('Incorrect reception password.'),{status:401});const token=randomBytes(32).toString('hex');await env.DB.prepare('INSERT INTO staff_sessions(token,expires) VALUES(?,?)').bind(hash(token),Date.now()+43200000).run();return json(200,{ok:true},{'Set-Cookie':`clinic_staff=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${url.protocol==='https:'?'; Secure':''}`});}

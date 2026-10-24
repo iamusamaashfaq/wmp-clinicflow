@@ -1,5 +1,7 @@
 # WMP ClinicFlow
 
+Public homepage: patient booking and tracking only. Clinic staff use the direct reception link. Reception now includes **Reports & PDF**: select dates/status, preview the register, or download a confidential PDF report.
+
 > **Live website:** https://wmp-clinicflow.wmpsolution.chatgpt.site  
 > **Reception:** https://wmp-clinicflow.wmpsolution.chatgpt.site/reception  
 > **Current hosted source:** [hosted/](hosted/README.md). Uses a shared cloud database, DNotifier HTTP/WebSocket integration, a new logo, Poppins and Open Sans. DNotifier AI is configured to the verified `open_ai` / `gpt-4.1-mini` connection.  

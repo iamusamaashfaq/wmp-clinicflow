@@ -51,3 +51,17 @@ Date and offer cutoff use Asia/Karachi. Queue estimates are approximate and star
 ## GitHub and hosting
 
 The source is mirrored into the user's private GitHub repository. GitHub Pages cannot run this Worker/database/secret-backed API; the working website is published through Sites. DNotifier provides AI and messaging infrastructure; it is not being represented as the website host.
+
+## Public patient website
+
+The homepage is now patient-facing: Book appointment, My appointment, private tracking and clinic help. It does not show a reception/dashboard link, staff delivery counters or team-development controls. Staff continue using the direct `/reception` link and their password. Hiding navigation does not replace authentication; staff APIs remain protected.
+
+## PDF reports
+
+Reception → **Reports & PDF** → choose From date, To date and Appointment status → Preview report or Download PDF. A report supports up to 93 days and 5,000 matching appointments. It contains current appointment status, token, patient name, scheduled date and earlier-alert preference, plus summary counts and page numbers. It is an appointment register, not a medical or billing report.
+
+`GET /api/reports` returns the signed-in report preview; `GET /api/reports/pdf` streams a PDF attachment. Both require the reception session. Downloads are rate-limited, marked private/no-store, and omit access tokens, private URLs and internal booking IDs. Names in Arabic/Urdu use a bundled Noto Sans Arabic fallback. All displayed report times use Asia/Karachi.
+
+Report generation uses PDF-lib plus fontkit because the hosted runtime is JavaScript. The official DNotifier SDK remains responsible for notifications and the clinic assistant. No new patient records or medical notes are collected for reporting.
+
+Validation: `node --test tests/reports.test.js` checks totals, date/status filters, invalid periods and secret exclusion. PDF layout has been rendered and reviewed with an 80-row, five-page sample, long names and Urdu names. An HTTP check verifies public downloads return 401 and a signed-in download starts with a valid PDF header.
