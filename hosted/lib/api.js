@@ -2,6 +2,7 @@ import {randomBytes,timingSafeEqual,createHash} from 'node:crypto';
 import {load,change,expire} from './store';
 import {today,addDays,validDate} from './clinic-domain';
 import {status,publish,eventStream,ask} from './notifier';
+import {parsePlan,executePlan} from './booking-assistant.js';
 import {pushConfig,subscribe,flushPush,pushStatus} from './push';
 import {makeReport} from './reports.js';
 const hash=s=>createHash('sha256').update(s).digest('hex');
@@ -41,7 +42,9 @@ export async function handle(req,env){
    if(!action&&req.method==='GET')return json(200,{push:pushStatus(c,id),booking:c.view(b),...await summary(env,c)});
    if(req.method!=='POST')return json(405,{error:'Method not allowed.'});
    const d=await data(req);
-   if(action==='help'){await rate(req,env,'ai',8);const question=String(d.question||'').trim();if(!question||question.length>1000)throw Error('Enter a question under 1,000 characters.');const v=c.view(b);const context={clinic:c.state.settings,appointment:{date:b.date,token:b.token,status:b.status,ahead:v.ahead,waitMin:v.waitMin,scheduledAt:b.scheduledAt,arrivalBy:b.arrivalBy,graceMinutes:5}};const answer=await ask(env,question,context);return json(200,{answer,source:'DNotifier AI'});}
+   if(action==='help'){patient(req,c,id);await rate(req,env,'ai',8);const question=String(d.question||'').trim();if(!question||question.length>1000)throw Error('Enter a question under 1,000 characters.');const v=c.view(b);const context={commandMode:true,todayPKT:today(),clinic:c.state.settings,appointment:{date:b.date,token:b.token,status:b.status,ahead:v.ahead,waitMin:v.waitMin,scheduledAt:b.scheduledAt,arrivalBy:b.arrivalBy,graceMinutes:5}};const raw=await ask(env,question,context);const plan=parsePlan(raw);if(plan.action==='none')return json(200,{answer:plan.answer,action:'none',source:'DNotifier AI'});
+    const requestId=/^[a-zA-Z0-9-]{8,80}$/.test(d.requestId||'')?d.requestId:randomBytes(16).toString('hex');
+    let result;try{result=(await change(env.DB,clinic=>{patient(req,clinic,id);return executePlan(clinic,id,plan,requestId);})).result;}catch(e){return json(200,{answer:e.message+(e.suggestedDate?' Next available date: '+e.suggestedDate+'. Ask me to shift to that date to proceed.':''),action:'none',unchanged:true,source:'DNotifier AI'});}let deliveryPending=false;try{await flushPush(env);await publish(env);}catch{deliveryPending=true;}return json(200,{...result,deliveryPending,source:'DNotifier AI'});}
    if(action==='queue'||action==='message')await staff(req,env);
    const r=await change(env.DB,clinic=>{if(!isStaff)patient(req,clinic,id);if(action==='cancel')clinic.cancel(id);else if(action==='offer')clinic.respond(id,d.offerId,d.accept===true);else if(action==='queue')clinic.queue(id,d.action);else if(action==='handoff')clinic.atomic(()=>clinic.event('help.requested',`${clinic.find(id).token} requested reception assistance`,id));else if(action==='message'){const text=String(d.text||'').trim();if(!text||text.length>500)throw Error('Enter a message under 500 characters.');clinic.atomic(()=>clinic.event('reception.message',text,id));}else throw Error('Unknown action.');return clinic.view(clinic.find(id));});await flushPush(env);await publish(env);return json(200,{booking:r.result});
   }

@@ -1,5 +1,7 @@
 # WMP ClinicFlow
 
+**Patient AI self-service:** In My appointment, patients can ask the DNotifier assistant to cancel or reschedule their own waiting booking without reception approval. Valid changes are committed to the shared database and appear automatically in reception. Missing dates prompt clarification; full days preserve the original booking. See [AI booking actions](hosted/AI-BOOKING-ACTIONS.md).
+
 Updated hosted website: required patient phone/address, 15-minute consultation estimates, tokens ahead, scheduled arrival reminders, timed doctor breaks, cancellation advancement, five-minute no-show grace and browser push notification support. **Prototype limitation:** keep reception or a patient page open for timed events. The hosted scheduler only allows hourly runs, so continuous unattended minute-level processing is not enabled. See [timing and alerts](hosted/TIMING-AND-ALERTS.md).
 
 Public homepage: patient booking and tracking only. Clinic staff use the direct reception link. Reception now includes **Reports & PDF**: select dates/status, preview the register, or download a confidential PDF report.
