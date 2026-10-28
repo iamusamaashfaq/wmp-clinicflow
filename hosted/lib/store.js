@@ -7,7 +7,7 @@ export async function load(db){
 // A compare-and-swap prevents two Workers from booking the same final slot.
 export async function change(db,fn){
  for(let attempt=0;attempt<8;attempt++){
-  const {clinic,revision}=await load(db);const previous=clinic.state.bookings.map(b=>({id:b.id,date:b.date,status:b.status,scheduledAt:b.scheduledAt}));const result=fn(clinic);
+  const {clinic,revision}=await load(db);const previous=clinic.state.bookings.map(b=>({id:b.id,date:b.date,status:b.status,lateGraceActive:b.lateGraceActive,scheduledAt:b.scheduledAt}));const result=fn(clinic);
   assertSlotChanges(previous,clinic.state.bookings);
   const update=await db.prepare('UPDATE clinic_state SET value=?,revision=revision+1 WHERE id=1 AND revision=?').bind(JSON.stringify(clinic.state),revision).run();
   if(update.meta.changes===1)return {result,clinic};

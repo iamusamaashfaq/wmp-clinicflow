@@ -1,3 +1,7 @@
+# Current platform policy
+
+See [PLATFORM-GUIDE.md](PLATFORM-GUIDE.md) for current multi-clinic access, private capacity and attendance rules. Arrival is 30 minutes early; a missed appointment is Absent with a 30-minute late check-in window, then final Absent. This supersedes the earlier five-minute cancellation prototype.
+
 # Appointment timing and phone alerts
 
 Each consultation averages 15 minutes. Reception controls opening/closing times and the maximum patient count. Both limits apply: a 4–9 PM session fits 20 consultations even if its patient limit is 50. Extend session hours to accommodate a higher limit.

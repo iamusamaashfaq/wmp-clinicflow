@@ -1,20 +1,20 @@
 # WMP ClinicFlow
 
-**Patient AI self-service:** In My appointment, patients can ask the DNotifier assistant to cancel or reschedule their own waiting booking without reception approval. Valid changes are committed to the shared database and appear automatically in reception. Missing dates prompt clarification; full days preserve the original booking. See [AI booking actions](hosted/AI-BOOKING-ACTIONS.md).
+A multi-clinic appointment platform by Team WMP (Usama Ashfaq, Ayan Ijaz and M Hassaan Ahmad).
 
-Updated hosted website: required patient phone/address, 15-minute consultation estimates, tokens ahead, scheduled arrival reminders, timed doctor breaks, cancellation advancement, five-minute no-show grace and browser push notification support. **Prototype limitation:** keep reception or a patient page open for timed events. The hosted scheduler only allows hourly runs, so continuous unattended minute-level processing is not enabled. See [timing and alerts](hosted/TIMING-AND-ALERTS.md).
+- **WMP admin:** https://wmp-clinicflow.wmpsolution.chatgpt.site/admin
+- **Current hosted source:** [hosted/](hosted/)
+- **Platform guide:** [clinic onboarding and attendance](hosted/PLATFORM-GUIDE.md)
 
-Public homepage: patient booking and tracking only. Clinic staff use the direct reception link. Reception now includes **Reports & PDF**: select dates/status, preview the register, or download a confidential PDF report.
+WMP owner/admin logins manage clinic profiles, manual subscription access/expiry, individual WMP team accounts and generated reception credentials. Every clinic gets separate `/c/<slug>` patient and `/c/<slug>/reception` links. Clinics have isolated appointments, sessions, realtime receivers and notification jobs. Credentials are never committed.
 
-> **Live website:** https://wmp-clinicflow.wmpsolution.chatgpt.site  
-> **Reception:** https://wmp-clinicflow.wmpsolution.chatgpt.site/reception  
-> **Current hosted source:** [hosted/](hosted/README.md). Uses a shared cloud database, DNotifier HTTP/WebSocket integration, a new logo, Poppins and Open Sans. DNotifier AI is configured to the verified `open_ai` / `gpt-4.1-mini` connection.  
-> The original Node/SQLite laptop prototype below remains available for local development. The live website does not require this laptop to stay on.
+Patients see 24-hour Pakistan times and a live hours/minutes/seconds countdown. They should arrive 30 minutes early and ask reception to check them in. Missing the consultation time marks a booking Absent with a further 30-minute late-check-in window, then final Absent. Booking totals, remaining slots and clinic capacity are reception-only. Daily and monthly daily-patient limits are supported; explicit daily exceptions take priority. AI cancellation/rescheduling, unique 15-minute consultation intervals and private PDF reports remain available.
 
+**Current operational limit:** keep reception or a patient page active for timed reminders/attendance, or connect a trusted minute-level background scheduler. Continuous unattended timing is not enabled by the native hourly scheduler. Subscriptions are recorded/activated manually; there is no online payment gateway in this version.
 
-A clinic operations prototype by **Usama, Ayan and Hassaan**. Daily capacity, private booking tokens, live queues and cancellation recovery, with the official DNotifier SDK.
+For local development of the current platform, use `cd hosted`, install dependencies, configure ignored `.dev.vars` (see the platform guide), generate/apply D1 migrations and run `npm run dev`. Run `node --test tests/*.test.js` inside `hosted`. The original Node prototype below is retained separately.
 
-## Run on Windows
+## Original single-clinic Node prototype (local development)
 
 Requires Node.js 24 or newer. Double-click **Start-ClinicFlow.cmd**, or run:
 
